@@ -26,6 +26,8 @@
 
 ;;; Code:
 
+(require 'json)
+
 (defconst analog/open-url "http://cafeanalog.dk/api/open")
 (defconst analog/shifts-url "http://cafeanalog.dk/api/shifts/today")
 
