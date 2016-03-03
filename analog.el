@@ -4,6 +4,8 @@
 
 ;; Author: Florian Biermann <fbie@itu.dk>
 ;; Keywords: convenience, games
+;; URL: http://github.com/fbie/analog-indicator
+;; Version: 1.0
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -24,11 +26,24 @@
 
 ;;; Code:
 
-(defun analog/is-open? ()
-    "Query analog API to check whether it is open."
-    t)
+(defconst analog/open-url "http://cafeanalog.dk/api/open")
+(defconst analog/shifts-url "http://cafeanalog.dk/api/shifts/today")
 
+(defun analog/json-read ()
+  "Read JSON from HTML response in current buffer."
+  (save-excursion
+    (goto-char url-http-end-of-headers)
+    (json-read)))
 
+(defun analog/open? ()
+  "Query analog API to check whether it is open."
+  (with-current-buffer (url-retrieve-synchronously analog/open-url)
+    (cdr (assoc 'open (analog/json-read)))))
+
+(defun analog-open? ()
+  "Check whether Café Analog is open and display status in minibuffer."
+  (interactive)
+  (message "Café Analog is currently %s." (if (analog/open?) "open" "closed")))
 
 (provide 'analog)
 ;;; analog.el ends here
