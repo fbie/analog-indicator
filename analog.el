@@ -40,7 +40,8 @@
 (defun analog/open? ()
   "Query analog API to check whether it is open."
   (with-current-buffer (url-retrieve-synchronously analog/open-url)
-    (cdr (assoc 'open (analog/json-read)))))
+    (let ((json-false nil))
+      (cdr (assoc 'open (analog/json-read))))))
 
 (defun analog-open? ()
   "Check whether Café Analog is open and display status in minibuffer."
