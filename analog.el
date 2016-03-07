@@ -35,13 +35,17 @@
   "Read JSON from HTML response in current buffer."
   (save-excursion
     (goto-char url-http-end-of-headers)
-    (json-read)))
+    (let ((json-false nil))
+      (json-read))))
+
+(defun analog/json-get (key dict)
+  "Retrieve value for KEY from DICT.  Use nil as false value."
+  (cdr (assoc key dict)))
 
 (defun analog/open? ()
   "Query analog API to check whether it is open."
   (with-current-buffer (url-retrieve-synchronously analog/open-url)
-    (let ((json-false nil))
-      (cdr (assoc 'open (analog/json-read))))))
+    (analog/json-get 'open (analog/json-read))))
 
 (defun analog-open? ()
   "Check whether Café Analog is open and display status in minibuffer."
