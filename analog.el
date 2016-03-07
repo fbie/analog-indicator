@@ -52,5 +52,13 @@
   (interactive)
   (message "Café Analog is currently %s." (if (analog/open?) "open" "closed")))
 
+(defun analog/open?-async ()
+  "Asynchronously check whether Analog is open."
+  (url-retrieve analog/open-url
+		(lambda (status)
+		  (let ((open (analog/json-get 'open (analog/json-read))))
+		    (message "Café Analog is currently %s." (if open "open" "closed"))))
+		nil t t))
+
 (provide 'analog)
 ;;; analog.el ends here
