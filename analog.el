@@ -6,6 +6,7 @@
 ;; Keywords: convenience, games
 ;; URL: http://github.com/fbie/analog-indicator
 ;; Version: 1.0
+;; Package-Requires: ((emacs "24.4.") (delight "20160305.1551"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -27,7 +28,6 @@
 ;;; Code:
 
 (require 'json)
-(require 'parse-time)
 (require 'delight)
 
 (defconst analog/open-url "http://cafeanalog.dk/api/open")
