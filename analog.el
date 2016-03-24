@@ -44,7 +44,7 @@
   "Retrieve value for KEY from DICT.  Use nil as false value."
   (cdr (assoc key dict)))
 
-(defvar analog/debug t "Set to t for debugging.")
+(defvar analog/debug nil "Set to t for debugging.")
 (defvar analog/debug-open t "Open value for debugging")
 
 (defun analog/json-open (dict)
