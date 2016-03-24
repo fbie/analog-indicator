@@ -27,6 +27,8 @@
 ;;; Code:
 
 (require 'json)
+(require 'parse-time)
+(require 'delight)
 
 (defconst analog/open-url "http://cafeanalog.dk/api/open")
 (defconst analog/shifts-url "http://cafeanalog.dk/api/shifts/today")
@@ -42,23 +44,59 @@
   "Retrieve value for KEY from DICT.  Use nil as false value."
   (cdr (assoc key dict)))
 
+(defvar analog/debug t "Set to t for debugging.")
+(defvar analog/debug-open t "Open value for debugging")
+
+(defun analog/json-open (dict)
+  "Check whether the member 'open in DICT is true."
+  (if analog/debug
+      analog/debug-open
+    (analog/json-get 'open dict)))
+
 (defun analog/open? ()
   "Query analog API to check whether it is open."
   (with-current-buffer (url-retrieve-synchronously analog/open-url)
-    (analog/json-get 'open (analog/json-read))))
+    (analog/json-open (analog/json-read))))
 
 (defun analog-open? ()
   "Check whether Café Analog is open and display status in minibuffer."
   (interactive)
   (message "Café Analog is currently %s." (if (analog/open?) "open" "closed")))
 
+(defun analog/lighter (open)
+  "Return a minor-mode lighter based on whether OPEN is non-nil."
+  (if open " :coffee:" ""))
+
+;;;###autoload
+(define-minor-mode analog-indicator-mode "Indicate whether ITU's Café Analog is open."
+  :lighter (analog/lighter nil))
+
+(defconst analog/base-interval-ms 600000 "Base interval between checks, 10 minutes.")
+(defvar analog/interval-ms analog/base-interval-ms "The current interval between checks, used for back-off.")
+
+(defun analog/check-fail ()
+  "Reset analog indicator and increase update interval by a factor of two."
+  (analog/update nil)
+  (setq analog/interval-ms (* 2 analog/interval-ms)))
+
+(defun analog/check-succeed ()
+  "Update analog indicator value based on the result in the current buffer."
+  (let ((open (analog/json-open (analog/json-read))))
+    (delight 'analog-indicator-mode (analog/lighter open) 'emacs)
+    (setq analog/interval-ms analog/base-interval-ms)))
+
 (defun analog/open?-async ()
   "Asynchronously check whether Analog is open."
   (url-retrieve analog/open-url
 		(lambda (status)
-		  (let ((open (analog/json-get 'open (analog/json-read))))
-		    (message "Café Analog is currently %s." (if open "open" "closed"))))
+		  (if (assoc :error status)
+		      (analog/check-fail)
+		    (analog/check-succeed)))
 		nil t t))
+
+(defun analog-check ()
+  (interactive)
+  (analog/open?-async))
 
 (provide 'analog)
 ;;; analog.el ends here
