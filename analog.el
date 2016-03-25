@@ -71,8 +71,8 @@
 (define-minor-mode analog-indicator-mode "Indicate whether ITU's Café Analog is open."
   :lighter (analog/lighter nil))
 
-(defconst analog/base-interval-ms 600000 "Base interval between checks, 10 minutes.")
-(defvar analog/interval-ms analog/base-interval-ms "The current interval between checks, used for back-off.")
+(defconst analog/base-interval-s 600 "Base interval between checks, 10 minutes.")
+(defvar analog/interval-ms analog/base-interval-s "The current interval between checks, used for back-off.")
 
 (defun analog/check-fail ()
   "Reset analog indicator and increase update interval by a factor of two."
