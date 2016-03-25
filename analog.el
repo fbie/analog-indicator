@@ -85,18 +85,27 @@
     (delight 'analog-indicator-mode (analog/lighter open) 'emacs)
     (setq analog/interval-ms analog/base-interval-ms)))
 
-(defun analog/open?-async ()
-  "Asynchronously check whether Analog is open."
+(defun analog/open?-async (finally)
+  "Asynchronously check whether Analog is open and call FINALLY when done."
   (url-retrieve analog/open-url
 		(lambda (status)
 		  (if (assoc :error status)
 		      (analog/check-fail)
-		    (analog/check-succeed)))
+		    (analog/check-succeed))
+		  (apply finally))
 		nil t t))
 
 (defun analog-check ()
   (interactive)
   (analog/open?-async))
+
+(defvar analog/timer nil)
+
+(defun analog/register-timer ()
+  "Register a timer for periodically checking Analog's opening status."
+  (setq timer (timer-set-function
+	       (timer-inc-time (timer-create) analog/interval-s) ;; Wait for as many seconds to fire.
+	       (lambda () (analog/open?-async analog/register-timer))))) ;; This is the function body.
 
 (provide 'analog)
 ;;; analog.el ends here
