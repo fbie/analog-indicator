@@ -45,7 +45,7 @@
   (cdr (assoc key dict)))
 
 (defvar analog/debug nil "Set to t for debugging.")
-(defvar analog/debug-open t "Open value for debugging")
+(defvar analog/debug-open t "Open value for debugging.")
 
 (defun analog/json-open (dict)
   "Check whether the member 'open in DICT is true."
@@ -70,7 +70,7 @@
 (defconst analog/base-interval 600 "Base interval between checks, 10 minutes.")
 (defvar analog/interval analog/base-interval "The current interval between checks, used for back-off.")
 
-(defvar analog/timer nil)
+(defvar analog/timer nil "The timer that runs the code to connect to cafeanalog.dk.")
 
 (defun analog/kill-timer ()
   "Kill the Café Analog timer."
