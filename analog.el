@@ -53,16 +53,6 @@
       analog/debug-open
     (analog/json-get 'open dict)))
 
-(defun analog/open? ()
-  "Query analog API to check whether it is open."
-  (with-current-buffer (url-retrieve-synchronously analog/open-url)
-    (analog/json-open (analog/json-read))))
-
-(defun analog-open? ()
-  "Check whether Café Analog is open and display status in minibuffer."
-  (interactive)
-  (message "Café Analog is currently %s." (if (analog/open?) "open" "closed")))
-
 (defun analog/lighter (open)
   "Return a minor-mode lighter based on whether OPEN is non-nil."
   (if open " 🍵" ""))
