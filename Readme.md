@@ -1,6 +1,6 @@
 # Café Analog Indicator for Emacs #
 
-The `analog-indicator-mode` show a little 🍵 in the Emacs mode line whenever [Café Analog](http://cafeanalog.dk) at the IT University of Copenhagen is open.
+The `analog-indicator-mode` displays a little 🍵 in the Emacs mode line whenever [Café Analog](http://cafeanalog.dk) at the IT University of Copenhagen is open.
 
 If you spend your entire working day in Emacs anyway, why bother checking on their web site? This nifty minor mode simply queries the Analog web API ~~as often as you'd like~~ every ten minutes or so ~~and even tells you when Analog is about to close~~.
 
