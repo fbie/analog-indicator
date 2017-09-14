@@ -1,6 +1,6 @@
 ;;; analog.el --- Indicates whether ITU's student café is open.  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2016  Florian Biermann
+;; Copyright (C) 2017  Florian Biermann
 
 ;; Author: Florian Biermann <fbie@itu.dk>
 ;; Keywords: convenience, games
