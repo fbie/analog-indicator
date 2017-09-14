@@ -57,15 +57,18 @@
   "Return a minor-mode lighter based on whether OPEN is non-nil."
   (if open " 🍵" ""))
 
-(defconst analog/base-interval 600 "Base interval between checks, 10 minutes.")
-(defvar analog/interval analog/base-interval "The current interval between checks, used for back-off.")
+(defun analog/update-lighter (lighter)
+  "Update analog-indicator-mode's LIGHTER."
+  (delight 'analog-indicator-mode lighter 'emacs))
 
+(defconst analog/interval 600 "Interval between checks, 10 minutes.")
 (defvar analog/timer nil "The timer that runs the code to connect to cafeanalog.dk.")
 
 (defun analog/kill-timer ()
   "Kill the Café Analog timer."
   (unless (eq analog/timer nil)
-    (cancel-timer analog/timer)))
+    (cancel-timer analog/timer)
+    (setq analog/timer nil)))
 
 (defun analog/register-timer (interval)
   "Register a timer for periodically checking Analog's opening status every INTERVAL seconds ."
@@ -78,15 +81,12 @@
   "Reset analog indicator and increase update interval by a factor of two."
   (analog/update nil)
   (message "Failed to connect to cafeanalog.dk")
-  (setq analog/interval (* 2 analog/interval))
-  (analog/kill-timer)
-  (analog/register-timer analog/interval))
+  (analog/update-lighter (analog/lighter nil)))
 
 (defun analog/check-succeed ()
   "Update analog indicator value based on the result in the current buffer."
   (let ((open (analog/json-open (analog/json-read))))
-    (delight 'analog-indicator-mode (analog/lighter open) 'emacs)
-    (setq analog/interval analog/base-interval)))
+    (analog/update-lighter (analog/lighter open))))
 
 (defun analog/open?-async ()
   "Asynchronously check whether Analog is open or kill the analog/timer if the mode is turned off."
@@ -100,13 +100,14 @@
 		            nil t t)
     (analog/kill-timer)))
 
-
-
 ;;;###autoload
-(define-minor-mode analog-indicator-mode "Indicate whether ITU's Café Analog is open."
+(define-minor-mode analog-indicator-mode
+  "Indicate whether ITU's Café Analog is open."
   :lighter (analog/lighter nil)
   :global t
-  (analog/register-timer analog/interval))
+  (if analog-indicator-mode
+      (analog/register-timer analog/interval)
+      (analog/kill-timer)))
 
 (provide 'analog)
 ;;; analog.el ends here
