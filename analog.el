@@ -65,47 +65,58 @@
 
 (defun analog/lighter (open)
   "Return a minor-mode lighter based on whether OPEN is non-nil."
-  (if open " :coffee:" ""))
+  (if open " 🍵" ""))
 
-;;;###autoload
-(define-minor-mode analog-indicator-mode "Indicate whether ITU's Café Analog is open."
-  :lighter (analog/lighter nil))
+(defconst analog/base-interval 600 "Base interval between checks, 10 minutes.")
+(defvar analog/interval analog/base-interval "The current interval between checks, used for back-off.")
 
-(defconst analog/base-interval-s 600 "Base interval between checks, 10 minutes.")
-(defvar analog/interval-ms analog/base-interval-s "The current interval between checks, used for back-off.")
+(defvar analog/timer nil)
+
+(defun analog/kill-timer ()
+  "Kill the Café Analog timer."
+  (unless (eq analog/timer nil)
+    (cancel-timer analog/timer)))
+
+(defun analog/register-timer (interval)
+  "Register a timer for periodically checking Analog's opening status every INTERVAL seconds ."
+  (when (eq analog/timer nil)
+    (setq analog/timer (run-at-time 5
+                                    interval
+                                    'analog/open?-async))))
 
 (defun analog/check-fail ()
   "Reset analog indicator and increase update interval by a factor of two."
   (analog/update nil)
-  (setq analog/interval-ms (* 2 analog/interval-ms)))
+  (message "Failed to connect to cafeanalog.dk")
+  (setq analog/interval (* 2 analog/interval))
+  (analog/kill-timer)
+  (analog/register-timer analog/interval))
 
 (defun analog/check-succeed ()
   "Update analog indicator value based on the result in the current buffer."
   (let ((open (analog/json-open (analog/json-read))))
     (delight 'analog-indicator-mode (analog/lighter open) 'emacs)
-    (setq analog/interval-ms analog/base-interval-ms)))
+    (setq analog/interval analog/base-interval)))
 
-(defun analog/open?-async (finally)
-  "Asynchronously check whether Analog is open and call FINALLY when done."
-  (url-retrieve analog/open-url
-		(lambda (status)
-		  (if (assoc :error status)
-		      (analog/check-fail)
-		    (analog/check-succeed))
-		  (apply finally))
-		nil t t))
+(defun analog/open?-async ()
+  "Asynchronously check whether Analog is open or kill the analog/timer if the mode is turned off."
+  (message "Connecting to cafeanalog.dk...")
+  (if analog-indicator-mode
+      (url-retrieve analog/open-url
+		            (lambda (status)
+		              (if (assoc :error status)
+		                  (analog/check-fail)
+		                (analog/check-succeed)))
+		            nil t t)
+    (analog/kill-timer)))
 
-(defun analog-check ()
-  (interactive)
-  (analog/open?-async))
 
-(defvar analog/timer nil)
 
-(defun analog/register-timer ()
-  "Register a timer for periodically checking Analog's opening status."
-  (setq timer (timer-set-function
-	       (timer-inc-time (timer-create) analog/interval-s) ;; Wait for as many seconds to fire.
-	       (lambda () (analog/open?-async analog/register-timer))))) ;; This is the function body.
+;;;###autoload
+(define-minor-mode analog-indicator-mode "Indicate whether ITU's Café Analog is open."
+  :lighter (analog/lighter nil)
+  :global t
+  (analog/register-timer analog/interval))
 
 (provide 'analog)
 ;;; analog.el ends here
