@@ -44,14 +44,9 @@
   "Retrieve value for KEY from DICT.  Use nil as false value."
   (cdr (assoc key dict)))
 
-(defvar analog/debug nil "Set to t for debugging.")
-(defvar analog/debug-open t "Open value for debugging.")
-
 (defun analog/json-open (dict)
   "Check whether the member 'open in DICT is true."
-  (if analog/debug
-      analog/debug-open
-    (analog/json-get 'open dict)))
+  (analog/json-get 'open dict))
 
 (defun analog/lighter (open)
   "Return a minor-mode lighter based on whether OPEN is non-nil."
