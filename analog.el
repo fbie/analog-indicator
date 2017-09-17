@@ -55,7 +55,7 @@
 
 (defun analog/lighter (open)
   "Return a minor-mode lighter based on whether OPEN is non-nil."
-  (if open " 🍵" ""))
+  (if open " 🍵" nil))
 
 (defun analog/update-lighter (lighter)
   "Update analog-indicator-mode's LIGHTER."
